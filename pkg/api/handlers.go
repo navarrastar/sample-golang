@@ -2,14 +2,17 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/gin-gonic/gin"
 
 	"sample-golang/pkg/models"
 	"sample-golang/pkg/services"
+	"sample-golang/pkg/utils"
 )
 
 // Handlers contains all HTTP handlers for the API
@@ -59,12 +62,27 @@ func (h *Handlers) HandleLandingSubmission(c *gin.Context) {
 		return
 	}
 
-	// Process the form data
+	// Process the form data in background
 	go h.submissionService.ProcessLandingSubmission(landingData)
 
-	// Send a success response
+	// Define the Fillout form URL
+	filloutFormURL := "https://forms.fillout.com/t/bj1RaePxL2us"
+
+	// Hash the phone number for security
+	hashedPhone := utils.HashString(landingData.Phone)
+
+	// Build query parameters
+	params := url.Values{}
+	params.Add("first", landingData.First)
+	params.Add("last", landingData.Last)
+	params.Add("id", hashedPhone) // Use hashed phone as id
+
+	// Create the redirect URL with parameters
+	redirectURL := fmt.Sprintf("%s?%s", filloutFormURL, params.Encode())
+
+	// Return redirect response
 	c.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"message": "Form submission received and processing",
+		"status":       "success",
+		"redirect_url": redirectURL,
 	})
 }
