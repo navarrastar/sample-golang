@@ -47,7 +47,7 @@ func (h *Handlers) HandleLandingSubmission(c *gin.Context) {
 	}
 
 	// Log the raw request for debugging
-	log.Printf("Received webhook body: %s", string(body))
+	log.Printf("Received POST body: %s", string(body))
 
 	// Bind JSON to struct
 	if err := json.Unmarshal(body, &landingData); err != nil {

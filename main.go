@@ -51,7 +51,7 @@ func main() {
 	handlers := api.NewHandlers(submissionService)
 
 	// Register routes
-	router.POST("/webhook/framer-submission", handlers.HandleLandingSubmission)
+	router.POST("/api/submissions/landing", handlers.HandleLandingSubmission)
 	router.GET("/health", handlers.HealthCheck)
 
 	// Get port from environment or default to 8080
