@@ -66,7 +66,7 @@ func (h *Handlers) HandleLandingSubmission(c *gin.Context) {
 	go h.submissionService.ProcessLandingSubmission(landingData)
 
 	// Define the Fillout form URL
-	filloutFormURL := "https://forms.fillout.com/t/bj1RaePxL2us"
+	filloutFormURL := "https://forms.democracyos.com/burlingtonvt-register"
 
 	// Hash the phone number for security
 	hashedPhone := utils.HashString(landingData.Phone)
@@ -85,4 +85,5 @@ func (h *Handlers) HandleLandingSubmission(c *gin.Context) {
 		"status":       "success",
 		"redirect_url": redirectURL,
 	})
+	log.Printf("Redirecting %s to: %s", landingData.Phone, redirectURL)
 }
