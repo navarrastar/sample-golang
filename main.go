@@ -17,6 +17,8 @@ import (
 	"bytes"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/joho/godotenv"
 )
 
 // Global variables for clients and config
@@ -26,14 +28,6 @@ var (
 	shortIOClient   ShortIOClient
 	config          Config
 )
-
-// getEnv reads an environment variable with a fallback default value
-func getEnv(key, fallback string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
-	}
-	return fallback
-}
 
 // RawFormData represents the actual data structure coming from Framer form
 type RawFormData struct {
@@ -511,15 +505,20 @@ func (c *shortIOClientImpl) CreateShortLink(originalURL string) (string, error) 
 
 func main() {
 	// Load configuration from environment variables
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Error loading .env file")
+	}
+
 	config = Config{
-		TextMagicAPIKey:      getEnv("TEXTMAGIC_API_KEY", ""),
-		TextMagicUsername:    getEnv("TEXTMAGIC_USERNAME", ""),
-		AirtableAPIKey:       getEnv("AIRTABLE_API_KEY", ""),
-		AirtableBaseID:       getEnv("AIRTABLE_BASE_ID", ""),
-		AirtablePartialTable: getEnv("AIRTABLE_PARTIAL_TABLE", ""),
-		AirtableR2ETable:     getEnv("AIRTABLE_R2E_TABLE", ""),
-		ShortIOAPIKey:        getEnv("SHORTIO_API_KEY", ""),
-		ShortIODomain:        getEnv("SHORTIO_DOMAIN", ""),
+		TextMagicAPIKey:      os.Getenv("TEXTMAGIC_API_KEY"),
+		TextMagicUsername:    os.Getenv("TEXTMAGIC_USERNAME"),
+		AirtableAPIKey:       os.Getenv("AIRTABLE_API_KEY"),
+		AirtableBaseID:       os.Getenv("AIRTABLE_BASE_ID"),
+		AirtablePartialTable: os.Getenv("AIRTABLE_PARTIAL_TABLE"),
+		AirtableR2ETable:     os.Getenv("AIRTABLE_R2E_TABLE"),
+		ShortIOAPIKey:        os.Getenv("SHORTIO_API_KEY"),
+		ShortIODomain:        os.Getenv("SHORTIO_DOMAIN"),
 	}
 
 	// Initialize API clients
@@ -623,17 +622,17 @@ func processSubmission(data RawFormData) {
 
 	log.Printf("Processing submission for %s %s (%s)", data.First, data.Last, phoneHash)
 
-	// Step 2: Get or create TextMagic contact
+	// Get or create TextMagic contact
 	textMagicContactID, err := textMagicClient.GetOrCreateContact(data.Phone, data.First, data.Last)
 	if err != nil {
 		log.Printf("Error with TextMagic API: %v", err)
 		return
 	}
 
-	// Step 4: Check if record exists in Airtable
+	// Check if record exists in Partial table
 	exists, err := airtableClient.RecordExists(config.AirtablePartialTable, phoneHash)
 	if err != nil {
-		log.Printf("Error checking Airtable: %v", err)
+		log.Printf("Error checking Partial table: %v", err)
 		return
 	}
 
@@ -659,13 +658,13 @@ func processSubmission(data RawFormData) {
 			return
 		}
 
-		// Step 5: Set non-blocking timer
+		// Set timer
 		go func(phoneHash, firstName, lastName, contactID string) {
 			log.Printf("Setting timer for %s", phoneHash)
 			// Wait for 15 minutes
 			time.Sleep(15 * time.Minute)
 
-			// Step 6: Check second Airtable table
+			// Check if record exists in R2E table
 			exists, err := airtableClient.RecordExists(config.AirtableR2ETable, phoneHash)
 			if err != nil {
 				log.Printf("Error checking second Airtable table: %v", err)
