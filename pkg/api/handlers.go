@@ -65,7 +65,6 @@ func (h *Handlers) HandleLandingSubmission(c *gin.Context) {
 	// Process the form data in background
 	go h.submissionService.ProcessLandingSubmission(landingData)
 
-	// Define the Fillout form URL
 	filloutFormURL := "https://forms.democracyos.com/burlingtonvt-register"
 
 	// Hash the phone number for security

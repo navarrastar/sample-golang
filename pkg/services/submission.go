@@ -96,11 +96,11 @@ func (s *landingSubmissionServiceImpl) ProcessLandingSubmission(data models.Land
 		go s.scheduleFollowup(phoneHash, data.First, data.Last, textMagicContactID)
 
 	} else if existsInPartial && existsInR2E {
-		log.Printf("Skipping processing for %s as they already exist in both R2E and Partial tables", phoneHash)
+		log.Printf("Skipping followup for %s as they already exist in both R2E and Partial tables", phoneHash)
 	} else if existsInPartial {
-		log.Printf("Skipping processing for %s as they already exist in the Partial table", phoneHash)
+		log.Printf("Skipping followup for %s as they already exist in the Partial table", phoneHash)
 	} else if existsInR2E {
-		log.Printf("Skipping processing for %s as they already exist in the R2E table", phoneHash)
+		log.Printf("Skipping followup for %s as they already exist in the R2E table", phoneHash)
 	}
 }
 
@@ -124,7 +124,7 @@ func (s *landingSubmissionServiceImpl) scheduleFollowup(phoneHash, firstName, la
 		params.Add("last", lastName)
 		params.Add("id", phoneHash)
 
-		targetURL := fmt.Sprintf("https://forms.democracyOS.com/t/bj1RaePxL2us?%s", params.Encode())
+		targetURL := fmt.Sprintf("https://forms.democracyos.com/burlingtonvt-register?%s", params.Encode())
 		shortLink, err := s.shortIOClient.CreateShortLink(targetURL)
 		if err != nil {
 			log.Printf("Error creating short link: %v", err)
